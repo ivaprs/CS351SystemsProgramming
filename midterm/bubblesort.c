@@ -1,10 +1,25 @@
 #include <stdio.h>
-void bubblesort(int [], int);
-void swap(int*,int*);
+void bubblesort(int arr[], int i){
+	for(int a = 0; a < i-1; a++){
+		for(int b = 0; b < n-(a+1); b++){
+			if(arr[b] > arr[b+1]){
+				swap(&arr[b], &arr[b+1]);
+			}
+		}
+	}
+}
+
+void swap(int *p1,int *p2){
+	int temp = *p1;
+	*p1=*p2;
+	*p2=temp;
+}
 
 int main()
 {
-	printf("edit the bubblesort.c file to implement your bubble sort\n");
+	FILE *fp = fopen(argv[1], "r");
+	fscanf(fp, "%[^\n]", c);
+	
 	return 0;
 }
 
