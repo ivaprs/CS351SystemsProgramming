@@ -5,9 +5,9 @@
 #define MSG "* running fileio %s workload with %s blocks and %s process(es)\n"
 
 #define USAGE "usage: ./fileio <workload> <block_size> <num_procs> \n" \
-"     - workload: WS / WR / RS / RR \n" \
-"     - block_size: 1KB / 10KB / 1000KB / 1MB \n" \
-"     - num_procs: 1 / 2 / 4 \n" \
+"     - workload: WS, WR, RS, RR \n" \
+"     - block_size: 4KB, 64KB, 1MB, 16MB \n" \
+"     - num_procs: 1, 2, 4, 8 \n" \
 "     - WS = write-sequential \n" \
 "     - WR = write-random \n" \
 "     - RS = read-sequential \n" \
