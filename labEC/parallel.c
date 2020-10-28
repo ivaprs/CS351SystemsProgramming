@@ -42,12 +42,20 @@ int main(int argc,char *argv[])
 		int status;
 		for(i=0; i<atoi(argv[1]); i++){
 			if((pid=fork())==0){
-				execvp(args[0],args);
+				if(execvp(args[0],args)==-1){
+					exit(EXIT_FAILURE);
+				}
 			}
 		}
 		for(i=0; i<atoi(argv[1]); i++){
-			wait(0);
+			pid = wait(&status);	
+			if(!status){
+				printf("Process: %d has executed successfully\n", pid);
+			} else {
+				printf("Process: %d did not execute successfully. Exit status: %d\n", pid, status);
+			}
 		}
+		
 		} else {
 		printf("Error: Command needs arguments\n");
 		exit(0);

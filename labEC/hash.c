@@ -4,10 +4,10 @@ int hash(char*);
 
 int main(int argc, char *argv[]){
 	if(argc > 2){
-		printf("This command uses only one argument. If your argument has spaces please use quotations");
+		printf("This command uses only one argument. If your argument has spaces please use quotations\n");
 		return(-1);
 	} else if(argc == 1){
-		printf("This command uses one argument. You inputed no arguments");
+		printf("This command uses one argument. You inputed no arguments\n");
 		return(-1);
 	}
 	printf("OUTPUT: %d\n", hash(argv[1]));
