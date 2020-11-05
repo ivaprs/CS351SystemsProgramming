@@ -37,7 +37,7 @@ int main(int argc, char **argv)
 	size_t block_size;
 	int bytes_read=0;
 	int status;
-	
+	// Checking how many bytes read/write will read/write when executing and assigning the value into block_size	
 	if(!strcmp(argv[2], "4K")){
 		block_size=4*1024;
 	} else if(!strcmp(argv[2],"64K")){
@@ -47,11 +47,13 @@ int main(int argc, char **argv)
 	} else if(!strcmp(argv[2], "16M")){
 		block_size=16*1024*1024;
 	}
-	gettimeofday(&start,NULL);	
+	//Startng timer
+	gettimeofday(&start,NULL);
+	//Will fork num_procs amount of children	
 	for(int i=0; i<atoi(argv[3]); i++){
 		if((fork())==0){
 			char BUFFER[20];
-			if(atoi(argv[4])==1073741824){
+			if(atoi(argv[4])==1073741824){ // Assigning each child a unique file to read/write 
 				snprintf(BUFFER, 20, "files/1G%d.txt",(i+1));
 			} else if (atoi(argv[4])==536870912){
 				snprintf(BUFFER, 20, "files/512M%d.txt",(i+1));
@@ -68,32 +70,36 @@ int main(int argc, char **argv)
 			} else if (atoi(argv[4])==524288){
 				snprintf(BUFFER, 20, "files/512K%d.txt",(i+1));
 			}
+			//Opening the file in either read only or write only
 			if(!strcmp(argv[1], "WS")||!strcmp(argv[1], "WR")){
 				fd=open(BUFFER, O_WRONLY|O_DIRECT);
 			} else if(!strcmp(argv[1], "RS")||!strcmp(argv[1], "RR")){
 				fd=open(BUFFER, O_RDONLY|O_DIRECT);
 			}
+			//create a buffer where memory will be allocated 
 			char *BUFF=memalign(4096, block_size);
 			while(bytes_read<atol(argv[4])){
-				if(!strcmp(argv[1], "RR")||!strcmp(argv[1], "WR")){
+				if(!strcmp(argv[1], "RR")||!strcmp(argv[1], "WR")){ //Sets the cursor to a random location in the file if the workload is not sequential
 					size_t random =(unsigned long int)((double)rand()/(double)RAND_MAX)*(atol(argv[4])-block_size);
 					lseek(fd, random, SEEK_SET);
-				}
+				} //Reads/Writes from file and stores the bytes that it read/wrote to into the variable bytes_read
 				if(!strcmp(argv[1], "WS")||!strcmp(argv[1], "WR")){
 					bytes_read+=write(fd,BUFF,block_size);
 				} else if(!strcmp(argv[1], "RS")||!strcmp(argv[1], "RR")){
 					bytes_read+=read(fd,BUFF,block_size);
 				}
 			}
-		exit(0);
+		exit(0); //Exit child process
 		}
 	}
-	for(int i=0; i<atoi(argv[3]); i++){
+	for(int i=0; i<atoi(argv[3]); i++){ // Wait for all child processes to finish and cleans them up (In the context of parent)
 		wait(&status);
 	}
+	//Ends the timer
 	gettimeofday(&end,NULL);
+	// Calculates the time it took for the process(es) to read/write the file
 	double time = (double)(end.tv_sec-start.tv_sec)+((double)(end.tv_usec-start.tv_usec)/1000000);
-	if(!strcmp(argv[2],"4K")){
+	if(!strcmp(argv[2],"4K")){ //Calculates latency/throughput and prints it out
 		printf("Latency is %f Operations/Second\n", 4194304/block_size/time);
 	} else {
 		printf("Throughput is %f MiB/Second\n",  1024.0/time);
