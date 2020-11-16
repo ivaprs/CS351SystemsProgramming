@@ -5,7 +5,9 @@
 #include <errno.h>
 #include <time.h>
 #include <sys/time.h>
-
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#define PORT 8081
 #define MSG "* running netio with method %s operation %s for %s number of ops...\n"
 
 #define USAGE "usage: ./netio <method> <operation> <num_ops> \n" \
@@ -45,6 +47,8 @@ int main(int argc, char **argv)
 	srand((unsigned) time(&t));
 	int method = -1; //used to store what method to test
 	int operation = -1; //used to store what operation to test
+
+
     if (argc != 4) 
     {
         printf(USAGE);
@@ -81,7 +85,6 @@ int main(int argc, char **argv)
 
   		gettimeofday(&start, NULL);
 
-		double ret_value = 0.0;
 
    		switch (method)
      	{
@@ -90,66 +93,82 @@ int main(int argc, char **argv)
      			{
         			case 0:
            				for (int i=0;i<num_ops;i++)
-           					ret_value = add((double)rand()/RAND_MAX,(double)rand()/RAND_MAX);
+           					add((double)rand()/RAND_MAX,(double)rand()/RAND_MAX);
            				break;
         			case 1:
            				for (int i=0;i<num_ops;i++)
-           					ret_value = subtract((double)rand()/RAND_MAX,(double)rand()/RAND_MAX);
+           					subtract((double)rand()/RAND_MAX,(double)rand()/RAND_MAX);
            				break;
         			case 2:
            				for (int i=0;i<num_ops;i++)
-           					ret_value = multiply((double)rand()/RAND_MAX,(double)rand()/RAND_MAX);
+           					multiply((double)rand()/RAND_MAX,(double)rand()/RAND_MAX);
            				break;
         			case 3:
            				for (int i=0;i<num_ops;i++)
-           					ret_value = divide((double)rand()/RAND_MAX,(double)rand()/RAND_MAX);
+           					divide((double)rand()/RAND_MAX,(double)rand()/RAND_MAX);
            				break;
         			default:
            				printf("operation not supported, exit...\n");
            				return -1;
      			}		
      			break;
-        	case 1:
-   				switch (operation)
-     			{
-        			case 0:
-           				printf("%s %s %s\n",argv[1],argv[2],argv[3]);
-           				break;
-        			case 1:
-           				printf("%s %s %s\n",argv[1],argv[2],argv[3]);
-           				break;
-					case 2:
-						printf("%s %s %s\n",argv[1],argv[2],argv[3]);
-						break;
-					case 3:
-						printf("%s %s %s\n",argv[1],argv[2],argv[3]);
-						break;
-					default:
-           				printf("operation not supported, exit...\n");
-           				return -1;
-     			}		
+        	case 1: ;
+   			int i, j, fds[2];
+			pipe(fds);
+			if(fork()==0){
+				while(1){
+					read(fds[0], &j, sizeof(int));
+					if(j == 0){
+						add((double)rand()/RAND_MAX,(double)rand()/RAND_MAX);
+					} else if(j == 1){
+						subtract((double)rand()/RAND_MAX,(double)rand()/RAND_MAX);
+					} else if(j == 2){
+						multiply((double)rand()/RAND_MAX,(double)rand()/RAND_MAX);
+					} else if(j == 3){
+						divide((double)rand()/RAND_MAX,(double)rand()/RAND_MAX);
+					} else{ break;}
+				}
+				exit(0);
+			} else{
+				for(i=0; i<num_ops; i++){
+					write(fds[1], &operation, sizeof(int));
+				}
+			}			
      			break;
-        	case 2:
-   				switch (operation)
-     			{
-        			case 0:
-           				printf("%s %s %s\n",argv[1],argv[2],argv[3]);
-           				break;
-        			case 1:
-           				printf("%s %s %s\n",argv[1],argv[2],argv[3]);
-           				break;
-					case 2:
-					   	printf("%s %s %s\n",argv[1],argv[2],argv[3]);
-					   	break;
-					case 3:
-					   	printf("%s %s %s\n",argv[1],argv[2],argv[3]);
-					   	break;
-					default:
-           				printf("operation not supported, exit...\n");
-           				return -1;
-     			}		
+        	case 2: ;
+			int sock = 0;
+			struct sockaddr_in serv_addr;
+			char buffer[1024] = {0};
+			char buf[10];			
+			if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0){
+				printf("\n Socket Creation Error \n");
+				return -1;
+			}
+			serv_addr.sin_family = AF_INET;
+			serv_addr.sin_port = htons( PORT );
+		
+			if(inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0){
+				printf("\n Invalid Address/ Address Not Supported \n");
+				return -1;
+			}
+				
+			if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0){
+				printf("\n Connection Failed \n");
+				return -1;
+			}		
+			if(operation == -1){
+           			printf("operation not supported, exit...\n");
+				return -1;
+			}
+			for(int i=0; i<num_ops; i++){
+				snprintf(buf, 10, "%s",argv[2]);
+           			send(sock, buf, strlen(buf), 0);
+				recv(sock,buffer, 1024, 0);
+			}
+			char *end = "END";
+			send(sock, end, strlen(end), 0);	
      			break;
-        case 3:
+        	case 3:
    				switch (operation)
      			{
         			case 0:
@@ -158,13 +177,13 @@ int main(int argc, char **argv)
         			case 1:
            				printf("%s %s %s\n",argv[1],argv[2],argv[3]);
            				break;
-					case 2:
-					   	printf("%s %s %s\n",argv[1],argv[2],argv[3]);
-					   	break;
-					case 3:
-					   	printf("%s %s %s\n",argv[1],argv[2],argv[3]);
-					   	break;
-					default:
+				case 2:
+				   	printf("%s %s %s\n",argv[1],argv[2],argv[3]);
+				   	break;
+				case 3:
+				   	printf("%s %s %s\n",argv[1],argv[2],argv[3]);
+				   	break;
+				default:
            				printf("operation not supported, exit...\n");
            				return -1;
      			}		
