@@ -7,7 +7,7 @@ test-cpubench: cpubench
 	./runbench.sh
 
 cpubench: cpubench.c
-	$(CC) $(CFLAGS) -o cpubench $<
+	$(CC) $(CFLAGS) -lpthread -Ofast -o cpubench $<
 
 clean:
 	rm -rf cpubench
