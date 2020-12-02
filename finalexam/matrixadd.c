@@ -18,29 +18,60 @@
 // and stores the result in res[][]
 void add(double** mat1, double** mat2, double** res, int size)
 {
-
+	for(int i=0; i<size; i++){
+		for(int j=0; j<size; j++){
+			res[i][j] = mat1[i][j] + mat2[i][j]
+		}
+	}
 }
 
 // This function finds the minimum value in res[][] array
 double min(double** res, int size)
 {
-	return 0.0;
+	double min = res[0][0];
+	for(int i=0; i<size; i++){
+		for(int j=0; j<size; j++){
+			if(res[i][j]<min){
+				min=res[i][j];
+			}	
+		}	
+	}
+	return min;
 }
 
 // This function finds the average value in res[][] array
 double aver(double** res, int size)
 {
-	return 0.0;
+	double aver = 0;
+	int count = 0;
+	for(int i=0; i<size; i++){
+		for(int j=0; j<size; j++){
+			if(res[i][j]>max){
+				aver+=res[i][j];
+				count++;
+			}	
+		}	
+	}
+	return aver/count;
 }
 
 // This function finds the maximum value in res[][] array
 double max(double** res, int size)
 {
-	return 0.0;
+	double max = 0;
+	for(int i=0; i<size; i++){
+		for(int j=0; j<size; j++){
+			if(res[i][j]>max){
+				max=res[i][j];
+			}	
+		}	
+	}
+	return max;
 }
 
 int main(int argc, char **argv)
 {
+	int i,j;
 	time_t t;
 	srand((unsigned) time(&t));
     if (argc != 2) 
@@ -59,7 +90,20 @@ int main(int argc, char **argv)
 		double **arr1 = NULL, **arr2 = NULL, **arr3 = NULL;
 		//allocate memory for arr1, arr2, and arr3 as a 2D array with size provided by command line argument
     	printf("allocating %lf GB memory...\n",len*3.0/(1024*1024*1024)); 
-		//initialize arr1 and arr2 to random double values between 0 and 1
+		double arr1 = (double )malloc(sizeof(double *) * size);
+		double arr2 = (double )malloc(sizeof(double *) * size);
+		double arr3 = (double )malloc(sizeof(double *) * size);	
+		for(i=0; i<size; i++){
+			arr1[i] = (double *)malloc(sizeof(double *) * size);
+			arr2[i] = (double *)malloc(sizeof(double *) * size);
+			arr3[i] = (double *)malloc(sizeof(double *) * size);
+			for(j=0; j<size; j++){
+				arr1[j] = (double)(rand()/RAND_MAX);
+				arr2[j] = (double)(rand()/RAND_MAX);
+				arr3[j] = (double)(rand()/RAND_MAX);
+			}
+		}
+		//initialize arr1 and arr2 t  random double values between 0 and 1
 
 		//get start timestamp
   		gettimeofday(&start, NULL);

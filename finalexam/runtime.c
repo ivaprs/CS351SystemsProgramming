@@ -13,9 +13,19 @@
 #define USAGE "usage: ./runtime <THREAD_POOL> <NUM_TASKS> <SLEEP> \n" \
 "     - THREAD_POOL: 1 / 10 \n" \
 "     - NUM_TASKS: 1 / 10 / 1000 \n" \
-"     - SLEEP: 1 / 10 \n" 
-
-
+"     - SLEEP: 1 / 10 \n"
+typedef struct str{
+	int num_tasks;
+	int sleep;
+}
+ 
+void *sleep(void *arg){
+	struct str *t = (struct str *) arg;
+	for(int i=0; i<t->num_tasks; i++){
+		sleep(t->sleep);	
+	}
+	return NULL;
+}
 int main(int argc, char **argv)
 {
 	time_t t;
@@ -35,13 +45,15 @@ int main(int argc, char **argv)
 
 		//Initialize thread pool of size THREAD_POOL
 		printf("Initialize thread pool of size %d\n",THREAD_POOL);
-
+		pthread_t tid[THREAD_POOL];
 		//get start timestamp
   		gettimeofday(&start, NULL);
 
 		//Running NUM_TASKS sleep tasks where each task sleeps SLEEP seconds
 		printf("Running %d sleep tasks where each task sleeps %d seconds\n",NUM_TASKS,SLEEP);
-
+		for(int i=0; i<THREAD_POOL; i++){
+			pthread_create(&tid[i], NULL, sleep, 10):
+		}
 		//get end timestamp
 		 gettimeofday(&end, NULL);
 
